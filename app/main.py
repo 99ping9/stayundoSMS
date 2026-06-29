@@ -6,7 +6,7 @@ from app.routers import reservations, templates as templates_router, admin
 from app.api import cron
 import os
 
-app = FastAPI(title="SMSAutomation", description="Automatic SMS System for accommodation reservation")
+app = FastAPI(title="StayUndoSMS", description="Automatic StayUndoSMS reservation")
 
 # Static files mount
 if not os.path.exists("static"):
