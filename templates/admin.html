@@ -144,12 +144,15 @@
 
             <div>
                 <div class="flex justify-between items-center mb-2">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">내용</label>
+                    <div class="flex items-center space-x-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">내용</label>
+                        <span id="byteCounter" class="text-xs text-gray-500">0/1900byte</span>
+                    </div>
                     <button type="button" onclick="insertNameTag()" class="px-2 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded hover:bg-indigo-100 transition-colors">
                         + 이름 추가 ({name})
                     </button>
                 </div>
-                <textarea id="editContent" rows="10"
+                <textarea id="editContent" rows="10" oninput="updateByteCount()"
                     class="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm text-sm leading-relaxed"></textarea>
             </div>
 
@@ -363,10 +366,37 @@
 
         // Removed Group Apply Logic
         document.getElementById('editModal').classList.remove('hidden');
+        updateByteCount();
     }
 
     function closeEditModal() {
         document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function getByteLength(str) {
+        let byteLength = 0;
+        for (let i = 0; i < str.length; i++) {
+            const code = str.charCodeAt(i);
+            if (code <= 127) {
+                byteLength += 1;
+            } else {
+                byteLength += 2;
+            }
+        }
+        return byteLength;
+    }
+
+    function updateByteCount() {
+        const textarea = document.getElementById('editContent');
+        const byteCounter = document.getElementById('byteCounter');
+        if (!textarea || !byteCounter) return;
+        const len = getByteLength(textarea.value);
+        byteCounter.textContent = `${len}/1900byte`;
+        if (len > 1900) {
+            byteCounter.className = "text-xs font-bold text-red-500";
+        } else {
+            byteCounter.className = "text-xs text-gray-500";
+        }
     }
 
     function insertNameTag() {
@@ -381,6 +411,7 @@
         textarea.selectionStart = startPos + textToInsert.length;
         textarea.selectionEnd = startPos + textToInsert.length;
         textarea.focus();
+        updateByteCount();
     }
 
     async function saveTemplate() {
@@ -388,6 +419,13 @@
         const send_time = document.getElementById('editTime').value;
         const content = document.getElementById('editContent').value;
         const subject = document.getElementById('editSubject').value;
+
+        // Byte count validation (max 1900 bytes)
+        const len = getByteLength(content);
+        if (len > 1900) {
+            alert(`내용이 1900byte를 초과하여 저장할 수 없습니다. (현재: ${len}byte)`);
+            return;
+        }
 
         // Removed apply_all
 
